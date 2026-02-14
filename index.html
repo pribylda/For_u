@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro tebe ❤️</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #ffe6e6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            color: #d32f2f;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); box-shadow: 0 0 15px rgba(76, 175, 80, 0.6); }
+            100% { transform: scale(1); }
+        }
+
+        #yesBtn {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            animation: heartbeat 1.2s infinite ease-in-out;
+        }
+
+        #noBtn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        #resetBtn {
+            background-color: white;
+            color: #d32f2f;
+            border: 2px solid #d32f2f;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 10px 20px;
+        }
+        #resetBtn:hover {
+            background-color: #ffe6e6;
+        }
+
+        #celebration {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            position: relative;
+        }
+
+        #celebration img {
+            max-width: 90%;
+            max-height: 45vh;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            object-fit: cover;
+            margin-bottom: 15px;
+            z-index: 5;
+        }
+        
+        .message {
+            font-size: 2rem;
+            color: #d32f2f;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .reaction-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            z-index: 10;
+        }
+
+        .reaction-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #ffcccc;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+        }
+
+        .reaction-btn:active {
+            transform: scale(0.8);
+        }
+
+        .flying-emoji {
+            position: fixed;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 100;
+            animation: floatUp 2s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1) translateX(0); opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-300px) scale(1.5) translateX(var(--random-x)); opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="question-screen">
+        <h1>Budeš můj Valentýn? 🌹</h1>
+        <div class="buttons">
+            <button id="yesBtn">Ano</button>
+            <button id="noBtn">Ne</button>
+        </div>
+    </div>
+
+    <div id="celebration">
+        <div class="message">Jupííí! Věděl jsem to! ❤️</div>
+        
+        <img id="slideshow" src="./images/foto.jpg" alt="Láska">
+        
+        <div class="reaction-bar">
+            <button class="reaction-btn" onclick="handleEmoji('❤️', event)">❤️</button>
+            <button class="reaction-btn" onclick="handleEmoji('😍', event)">😍</button>
+            <button class="reaction-btn" onclick="handleEmoji('🤮', event)">🤮</button>
+        </div>
+
+        <button id="resetBtn">Znovu se zeptat 🔄</button>
+
+        <audio id="music" loop>
+            <source src="https://archive.org/download/LoveSongs_201803/George%20Michael%20-%20Careless%20Whisper.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <script>
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // ZDE VLOŽ SVŮJ DISCORD WEBHOOK ODKAZ MEZI UVOZOVKY:
+        const discordWebhookURL = "https://discord.com/api/webhooks/1471982354351263948/cVcCtGzF1TgPcNa1DarMZapI7Hov8ymDTDWNiz1sczHGBxS-Mu4yQHT1iAjofbOvrcxA"; 
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const questionScreen = document.getElementById('question-screen');
+        const celebrationScreen = document.getElementById('celebration');
+        const music = document.getElementById('music');
+        const slideshowImg = document.getElementById('slideshow');
+
+        const noTexts = [
+            "Určitě?", "Rozmysli si to!", "Nedělej to...", "Zlomíš mi srdce 💔", "Dám ti čokoládu!", "Prosííím 🥺"
+        ];
+        
+        let clickCount = 0;
+        let slideshowInterval;
+
+        // Funkce pro odeslání zprávy na Discord
+        function sendToDiscord(message) {
+            if (!discordWebhookURL || discordWebhookURL.includes("SEM_VLOZ")) return;
+            
+            fetch(discordWebhookURL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content: message })
+            }).catch(err => console.error("Chyba odeslání:", err));
+        }
+
+        // Tlačítko NE
+        noBtn.addEventListener('click', () => {
+            clickCount++;
+            if (clickCount < noTexts.length) {
+                noBtn.innerText = noTexts[clickCount];
+            } else {
+                noBtn.innerText = "Už to nejde odmítnout!";
+            }
+            const currentSize = parseFloat(window.getComputedStyle(yesBtn).fontSize);
+            yesBtn.style.fontSize = `${currentSize * 1.4}px`;
+            yesBtn.style.padding = `${parseFloat(window.getComputedStyle(yesBtn).paddingTop) * 1.2}px ${parseFloat(window.getComputedStyle(yesBtn).paddingRight) * 1.2}px`;
+            
+            // Odeslat info, že váhá (volitelné, pokud chceš vidět i tohle)
+            // sendToDiscord("⚠️ Klikla na NE (Pokus č. " + clickCount + ")");
+        });
+
+        // Tlačítko ANO
+        yesBtn.addEventListener('click', () => {
+            questionScreen.style.display = 'none';
+            celebrationScreen.style.display = 'flex';
+            music.play();
+            startSlideshow();
+            
+            // ODESLÁNÍ ZPRÁVY NA DISCORD
+            sendToDiscord("🚨 **POZOR!** Právě řekla **ANO**! 🎉❤️ Běž chystat rande!");
+        });
+
+        // Tlačítko RESET
+        resetBtn.addEventListener('click', () => {
+            music.pause();
+            music.currentTime = 0;
+            celebrationScreen.style.display = 'none';
+            questionScreen.style.display = 'block';
+            clickCount = 0;
+            noBtn.innerText = "Ne";
+            yesBtn.style.fontSize = '1.2rem';
+            yesBtn.style.padding = '15px 30px';
+            clearInterval(slideshowInterval);
+            
+            sendToDiscord("🔄 Restartovala to a hraje znova.");
+        });
+
+        const photos = [
+            "./images/foto1.jpg", "./images/foto2.jpg", "./images/foto3.jpg",
+            "./images/foto4.jpg", "./images/foto5.jpg", "./images/foto6.jpg",
+        ];
+        let photoIndex = 0;
+
+        function startSlideshow() {
+            clearInterval(slideshowInterval);
+            slideshowInterval = setInterval(() => {
+                photoIndex = (photoIndex + 1) % photos.length;
+                slideshowImg.src = photos[photoIndex];
+            }, 800); 
+        }
+
+        // --- Obsluha Emoji ---
+        function handleEmoji(emojiChar, event) {
+            // 1. Vytvořit létající efekt
+            spawnEmoji(emojiChar, event);
+            
+            // 2. Odeslat na Discord
+            sendToDiscord(`Reakce na fotky: ${emojiChar}`);
+        }
+
+        function spawnEmoji(emojiChar, event) {
+            const el = document.createElement('div');
+            el.innerText = emojiChar;
+            el.classList.add('flying-emoji');
+            const rect = event.target.getBoundingClientRect();
+            const randomOffset = (Math.random() - 0.5) * 20; 
+            el.style.left = `${rect.left + rect.width / 2 + randomOffset}px`;
+            el.style.top = `${rect.top}px`;
+            const randomX = (Math.random() - 0.5) * 100 + 'px';
+            el.style.setProperty('--random-x', randomX);
+            document.body.appendChild(el);
+            setTimeout(() => { el.remove(); }, 2000);
+        }
+    </script>
+</body>
+</html>
